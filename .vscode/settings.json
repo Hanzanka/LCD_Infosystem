@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./dht22",
+        "./display"
+    ]
+}
