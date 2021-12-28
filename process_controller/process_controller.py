@@ -61,10 +61,11 @@ def main():
     keylogger = KeyLogger(keylogger_end)
     lcd = LCD()
     menu = Menu(lcd.get_lcd(), menu_end)
-    
+
     process1 = Process(target=menu.start)
     process1.start()
 
     keylogger.start()
+
 
 main()
