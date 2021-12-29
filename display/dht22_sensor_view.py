@@ -6,6 +6,7 @@ from threading import Thread, Event
 from time import sleep
 from datetime import datetime
 from .lcd_view import LCD_view
+import config
 
 able_to_print = True
 printing = False
@@ -26,6 +27,7 @@ class Dht22_view(LCD_view):
         self.__eventhandler = None
         self.__thread_event = None
         lcd.backlight_enabled = True
+        self.__paths = config.paths
 
     def _update_data(self, data) -> None:
 
@@ -55,14 +57,6 @@ class Dht22_view(LCD_view):
 
     def __update_clock(self, x: int, y: int):
 
-        """
-        Updates current time in format xxH.xxM.xxS every tenth of a second
-
-        Parameters:
-            x: int -> lcd row where time is displayed
-            y: int -> lcd column where time is displayed
-        """
-
         global able_to_print
         global printing
 
@@ -88,7 +82,7 @@ class Dht22_view(LCD_view):
 
         self.__thread_event = Event()
 
-        file_name = "/home/ville/python/infosystem_project/data/temperature_and_humidity/latest.csv"
+        file_name = self.__paths['latest.csv']
         self.__observer = Observer()
         self.__eventhandler = FileChangeHandler(self)
         self.__observer.schedule(self.__eventhandler, file_name)
@@ -105,6 +99,11 @@ class Dht22_view(LCD_view):
         thread_clock.start()
 
     def close(self) -> None:
+        
+        '''
+        Closes the view
+        '''
+        
         self.__thread_event.set()
         self.__observer.stop()
         self.__lcd.clear()
@@ -113,7 +112,7 @@ class Dht22_view(LCD_view):
 class FileChangeHandler(FileSystemEventHandler):
 
     """
-    When file given to observer is closed this class will read the file and sends data to view to be updated on the display
+    Used to detect changes in 
 
     Parameters:
         view: View -> View where data is sent to be updated on the display
@@ -122,7 +121,7 @@ class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, view: Dht22_view) -> None:
         super().__init__()
         self.view = view
-        self.file_name = "/home/ville/python/infosystem_project/data/temperature_and_humidity/latest.csv"
+        self.file_name = config.paths['latest.csv']
 
     def on_closed(self, event):
         data = self.__read_file()
