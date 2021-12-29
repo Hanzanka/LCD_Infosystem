@@ -1,5 +1,5 @@
 from typing import List
-from RPLCD import i2c
+from RPLCD.i2c import CharLCD
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from threading import Thread, Event
@@ -20,7 +20,7 @@ class Dht22_view(LCD_view):
         lcd: i2c.CharLCD -> lcd-object where data is displayed
     """
 
-    def __init__(self, lcd: i2c.CharLCD) -> None:
+    def __init__(self, lcd: CharLCD) -> None:
         self.__lcd = lcd
         self.__observer = None
         self.__eventhandler = None
@@ -138,7 +138,7 @@ class FileChangeHandler(FileSystemEventHandler):
 
 
 if __name__ == "__main__":
-    lcd = i2c.CharLCD(
+    lcd = CharLCD(
         i2c_expander="PCF8574", address=0x27, port=1, charmap="A00", cols=20, rows=4
     )
     lcd.backlight_enabled = False

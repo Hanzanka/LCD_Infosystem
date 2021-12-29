@@ -1,6 +1,6 @@
 from os import pipe
 from time import sleep
-from .lcd_controller import LCD
+from .lcd_builder import LCD
 from .lcd_view import LCD_view
 from .dht22_sensor_view import Dht22_view
 from multiprocessing import Pipe

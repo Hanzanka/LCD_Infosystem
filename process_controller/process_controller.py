@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, "/home/ville/python/infosystem_project/")
 
 from time import sleep
-from display.lcd_controller import LCD
+from display.lcd_builder import LCD
 from display.dht22_sensor_view import Dht22_view
 from display.menu import Menu
 from internet_speedtest.networkmonitor import NetworkMonitor as Monitor
