@@ -1,15 +1,4 @@
-from datetime import datetime
-import multiprocessing
-from multiprocessing import Queue
-from queue import Empty
 from RPLCD.i2c import CharLCD
-from time import clock, sleep
-from dataclasses import astuple
-import threading
-
-able_to_print = True
-printing = False
-
 
 class LCD:
     
