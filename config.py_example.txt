@@ -1,0 +1,5 @@
+paths = {
+    "data.csv": "Path to data.csv-file. Every result is logged in this file",
+    "latest.csv": "Path to latest.csv. This file is overwritten everytime dht22-sensor measures new result",
+    "project_path": "Path where project is located",
+}
