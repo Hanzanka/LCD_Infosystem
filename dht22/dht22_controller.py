@@ -1,10 +1,17 @@
-import multiprocessing
-from time import sleep, time
+import pathlib
+
+conf_path = str(pathlib.Path(__file__).parent.resolve().parent.resolve()) + "/config.py"
+import importlib.util
+
+spec = importlib.util.spec_from_file_location("config", conf_path)
+config = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(config)
+
 from datetime import datetime
 import adafruit_dht
 from board import D12
 import asyncio
-from dataclasses import astuple, dataclass, field
+from dataclasses import astuple, dataclass
 from datetime import datetime
 import csv
 
@@ -73,8 +80,8 @@ class Logger:
     def __init__(
         self,
         update_interval=10,
-        file_name="/home/ville/python/infosystem_project/data/temperature_and_humidity/data.csv",
-        recent_result_file="/home/ville/python/infosystem_project/data/temperature_and_humidity/latest.csv",
+        file_name=config.paths["data.csv"],
+        recent_result_file=config.paths["latest.csv"],
     ) -> None:
 
         self.update_interval = update_interval
