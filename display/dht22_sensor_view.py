@@ -1,3 +1,12 @@
+import pathlib
+
+conf_path = str(pathlib.Path(__file__).parent.resolve().parent.resolve()) + "/config.py"
+import importlib.util
+
+spec = importlib.util.spec_from_file_location("config", conf_path)
+config = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(config)
+
 from typing import List
 from RPLCD.i2c import CharLCD
 from watchdog.observers import Observer
@@ -6,7 +15,6 @@ from threading import Thread, Event
 from time import sleep
 from datetime import datetime
 from .lcd_view import LCD_view
-import config
 
 able_to_print = True
 printing = False
@@ -82,7 +90,7 @@ class Dht22_view(LCD_view):
 
         self.__thread_event = Event()
 
-        file_name = self.__paths['latest.csv']
+        file_name = self.__paths["latest.csv"]
         self.__observer = Observer()
         self.__eventhandler = FileChangeHandler(self)
         self.__observer.schedule(self.__eventhandler, file_name)
@@ -99,11 +107,11 @@ class Dht22_view(LCD_view):
         thread_clock.start()
 
     def close(self) -> None:
-        
-        '''
+
+        """
         Closes the view
-        '''
-        
+        """
+
         self.__thread_event.set()
         self.__observer.stop()
         self.__lcd.clear()
@@ -112,7 +120,7 @@ class Dht22_view(LCD_view):
 class FileChangeHandler(FileSystemEventHandler):
 
     """
-    Used to detect changes in 
+    Used to detect changes in
 
     Parameters:
         view: View -> View where data is sent to be updated on the display
@@ -121,7 +129,7 @@ class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, view: Dht22_view) -> None:
         super().__init__()
         self.view = view
-        self.file_name = config.paths['latest.csv']
+        self.file_name = config.paths["latest.csv"]
 
     def on_closed(self, event):
         data = self.__read_file()
