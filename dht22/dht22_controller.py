@@ -80,8 +80,8 @@ class Logger:
     def __init__(
         self,
         update_interval=10,
-        file_name=config.paths["data.csv"],
-        recent_result_file=config.paths["latest.csv"],
+        file_name=config.dht22_paths["data.csv"],
+        recent_result_file=config.dht22_paths["latest.csv"],
     ) -> None:
 
         self.update_interval = update_interval
