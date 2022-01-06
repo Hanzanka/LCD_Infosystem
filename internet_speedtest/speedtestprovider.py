@@ -1,13 +1,5 @@
-import pathlib
 from time import sleep
-
-conf_path = str(pathlib.Path(__file__).parent.resolve().parent.resolve()) + "/config.py"
-import importlib.util
-
-spec = importlib.util.spec_from_file_location("config", conf_path)
-config = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(config)
-
+import config
 import csv
 from speedtest import Speedtest
 
@@ -67,7 +59,9 @@ class SpeedtestProvider:
         open(self.__paths["latest.txt"], "a").write("Testing Upload\n")
         upload_result = self.__upload_test()
         results.append(upload_result)
-        open(self.__paths["latest.txt"], "a").write(f"Up{str(upload_result):>13} Mbps\n")
+        open(self.__paths["latest.txt"], "a").write(
+            f"Up{str(upload_result):>13} Mbps\n"
+        )
         print(f"Upload speed: {upload_result} Mb/s")
 
         self.__log_results(results)
