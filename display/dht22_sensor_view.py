@@ -1,12 +1,4 @@
-import pathlib
-
-conf_path = str(pathlib.Path(__file__).parent.resolve().parent.resolve()) + "/config.py"
-import importlib.util
-
-spec = importlib.util.spec_from_file_location("config", conf_path)
-config = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(config)
-
+import config
 from typing import List
 from RPLCD.i2c import CharLCD
 from watchdog.observers import Observer
@@ -35,7 +27,7 @@ class Dht22_view(LCD_view):
         self.__eventhandler = None
         self.__thread_event = None
         lcd.backlight_enabled = True
-        self.__paths = config.paths
+        self.__paths = config.dht22_paths
 
     def _update_data(self, data) -> None:
 
@@ -129,7 +121,7 @@ class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, view: Dht22_view) -> None:
         super().__init__()
         self.view = view
-        self.file_name = config.paths["latest.csv"]
+        self.file_name = config.dht22_paths["latest.csv"]
 
     def on_closed(self, event):
         data = self.__read_file()
