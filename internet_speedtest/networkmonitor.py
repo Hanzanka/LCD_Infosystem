@@ -1,56 +1,99 @@
 from time import sleep
-import sys
-from multiprocessing import Queue
-
+from multiprocessing import Pipe
+from threading import Thread
 
 class NetworkMonitor:
-    def __init__(self, update_rate=5, rounding=2) -> None:
-        self.update_rate = update_rate
-        self.rounding = rounding
+    def __init__(
+        self, update_interval=2, rounding=2, iface="eth0", direction="rx"
+    ) -> None:
+        self.__update_interval = update_interval
+        self.__rounding = rounding
+        
+        self.__direction = direction
+        self.__direction_dict = {"rx": "tx", "tx": "rx"}
+        self.__iface = iface
+        
+        self.__commands = {"switch": self.__switch_direction}
+        
+        self.__monitor_pipe = None
+        self.__controller_pipe = None
 
-    def monitor_download_rate(self, queue: Queue) -> None:
+        self.__monitor_thread = None
+        self.__controller_thread = None
+
+        self.name = 'networkmonitor.py'
+
+    def __monitor_bandwidth(self) -> None:
         while True:
-            speed = self.__transfer_rate(2)
-            print(speed)
-            if queue is not None:
-                while True:
-                    if queue.empty() is not True:
-                        data = queue.get()
-                        data["monitor"]['speed'] = f"Speed: {f'{speed} MBit/s':>12}"                      
-                        queue.put(data)
-                        break
-                    else:
-                        sleep(1 / 1000000)
-            else:
-                print(f"Download speed: {speed} MBit/s")
-                self.__clear_line(1)
+            speed = self.__transfer_rate()
+            try:
+                self.__monitor_pipe.send(speed)
+            except OSError:
+                print(f'Closing bandwidth monitor on {self.name}')
+                break
+            except BrokenPipeError:
+                print(f'Closing bandwidth monitor on {self.name}')
+                break
 
-    def __get_bytes(self, direction: str, iface="eth0"):
-        with open(f"/sys/class/net/{iface}/statistics/{direction}_bytes", "r") as file:
+    def __get_bytes(self, direction: str):
+        with open(
+            f"/sys/class/net/{self.__iface}/statistics/{direction}_bytes", "r"
+        ) as file:
             data = file.read()
-            file.close()
             return int(data)
 
-    def __transfer_rate(self, update_interval: int = 2, rounding: int = 2) -> tuple:
+    def __transfer_rate(self) -> tuple:
         results = []
         for _ in range(5):
-            result_1 = self.__get_bytes("rx")
-            sleep(1 / update_interval / 5)
-            result_2 = self.__get_bytes("rx")
-            results.append((result_2 - result_1) * 7.6294 * (10 ** (-6)) * 5)
-        return f"{round(sum(results) / len(results) * update_interval, rounding):.2f}"
+            direction = self.__direction
+            result_1 = self.__get_bytes(direction)
+            sleep(1 / self.__update_interval / 5)
+            result_2 = self.__get_bytes(direction)
+            results.append(
+                self.__convert_to_megabits(result_1, result_2)
+                * 5
+                * self.__update_interval
+            )
+        return round(sum(results) / len(results), self.__rounding)
 
-    def __clear_line(self, lines=1) -> None:
-        CURSOR_UP_ONE = "\x1b[1A"
-        ERASE_LINE = "\x1b[2K"
-        for _ in range(lines):
-            sys.stdout.write(CURSOR_UP_ONE)
-            sys.stdout.write(ERASE_LINE)
+    def __convert_to_megabits(self, result_1, result_2) -> float:
+        bits = 8 * (result_2 - result_1)
+        megabits = bits / (1024 ** 2)
+        return megabits
 
-    def main(self, queue: Queue = None):
-        self.monitor_download_rate(queue)
+    def start(self, monitor_pipe: Pipe, controller_pipe: Pipe):
+        
+        self.__controller_pipe = controller_pipe
+        self.__monitor_pipe = monitor_pipe
 
+        self.__monitor_thread = Thread(target=self.__monitor_bandwidth, args=[])
+        self.__controller_thread = Thread(target=self.__controller, args=[])
+
+        self.__monitor_thread.start()
+        self.__controller_thread.start()
+
+    def __switch_direction(self):
+        self.__direction = self.__direction_dict[self.__direction]
+
+    def __controller(self) -> None:
+        while True:
+            command = self.__controller_pipe.recv()
+            if command != "stop" and command in self.__commands:
+                self.__commands[command]()
+            elif command == "stop":
+                print(f"Closing controller on {self.name}")
+                self.__monitor_pipe.close()
+                self.__controller_pipe.close()
+                break
+        
+        self.__monitor_thread.join()
+        
+        if not self.__monitor_thread.is_alive():
+            print(f'Bandwidth monitor on {self.name} is closed')
+        else:
+            print(f'Bandwidth monitor on {self.name} is still alive')
+            
+        print(f'Controller on {self.name} is closed')
 
 if __name__ == "__main__":
-    monitor = NetworkMonitor()
-    monitor.monitor_download_rate(None)
+    pass
