@@ -1,8 +1,7 @@
 import pathlib
-
 conf_path = str(pathlib.Path(__file__).parent.resolve().parent.resolve()) + "/config.py"
-import importlib.util
 
+import importlib.util
 spec = importlib.util.spec_from_file_location("config", conf_path)
 config = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(config)
@@ -12,7 +11,6 @@ import adafruit_dht
 from board import D12
 import asyncio
 from dataclasses import astuple, dataclass
-from datetime import datetime
 import csv
 
 

@@ -2,6 +2,7 @@ from time import sleep
 from multiprocessing import Pipe
 from threading import Thread
 
+
 class NetworkMonitor:
     def __init__(
         self, update_interval=2, rounding=2, iface="eth0", direction="rx"
@@ -94,6 +95,3 @@ class NetworkMonitor:
             print(f'Bandwidth monitor on {self.name} is still alive')
             
         print(f'Controller on {self.name} is closed')
-
-if __name__ == "__main__":
-    pass

@@ -9,13 +9,14 @@ class SpeedtestProvider:
         self.__tester = Speedtest()
         self.__rounding = round_results
         self.__paths = config.speedtest_paths
+        self.abort = False
 
     def __download_test(self) -> float:
-        return round(self.__tester.download() / 10 ** 6, self.__rounding)
+        return round(self.__tester.download() / (1024**2), self.__rounding)
 
     def __upload_test(self) -> float:
         return round(
-            self.__tester.upload(pre_allocate=False) / 10 ** 6, self.__rounding
+            self.__tester.upload(pre_allocate=False) / (1024**2), self.__rounding
         )
 
     def __get_server(self) -> dict:
@@ -44,6 +45,9 @@ class SpeedtestProvider:
 
         sleep(1 / 100)
 
+        if self.abort:
+            return
+
         open(self.__paths["latest.txt"], "a").write("Testing Download\n")
         download_result = self.__download_test()
         results.append(download_result)
@@ -55,6 +59,9 @@ class SpeedtestProvider:
         )
 
         sleep(1 / 100)
+
+        if self.abort:
+            return
 
         open(self.__paths["latest.txt"], "a").write("Testing Upload\n")
         upload_result = self.__upload_test()
@@ -68,7 +75,7 @@ class SpeedtestProvider:
 
         sleep(1 / 100)
 
-        open(self.__paths["latest.txt"], "a").write("Complete!")
+        open(self.__paths["latest.txt"], "a").write("Complete")
 
     def __log_results(self, results: list):
 
