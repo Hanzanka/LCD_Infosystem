@@ -1,14 +1,12 @@
 import os
 import sys
-import config
 from multiprocessing import Process
 from multiprocessing.connection import Pipe
-from display import speedtest_view
-from display.lcd_builder import LCD
 from display.menu import Menu
-import sys, tty, os, termios
-from display.speedtest_view import Internet_speedtest_view
-from RPLCD.i2c import CharLCD
+import sys
+import tty
+import os
+import termios
 
 
 class KeyLogger:
@@ -44,10 +42,10 @@ class KeyLogger:
         try:
             while True:
                 key = self.__getkey()
-                if key == "esc":
+                if key == "3":
                     quit()
                 else:
-                    print('Sending key:', key)
+                    print("Sending key:", key)
                     self.__pipe.send(key)
         except (KeyboardInterrupt, SystemExit):
             print("stopping.")
@@ -57,18 +55,15 @@ def main():
 
     keylogger_end, menu_end = Pipe()
     keylogger = KeyLogger(keylogger_end)
-    # lcd = LCD()
-    # menu = Menu(lcd.get_lcd(), menu_end)
+    menu = Menu(menu_end)
 
-    # process1 = Process(target=menu.start)
-    # process1.start()
+    process1 = Process(target=menu.start)
+    process1.start()
 
-    lcd = CharLCD(
-        i2c_expander="PCF8574", address=0x27, port=1, charmap="A00", cols=20, rows=4
-    )
-    speedtest_view = Internet_speedtest_view(lcd)
-    speedtest_view.start(menu_end)
+    # speedtest_view = Internet_speedtest_view(lcd)
+    # speedtest_view.start(menu_end)
 
     keylogger.start()
+
 
 main()
